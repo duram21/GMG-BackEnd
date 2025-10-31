@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  # --- 백엔드 (FastAPI) ---
+  backend:
+    build: ./backend
+    container_name: my_project_backend
+    # backend/main.py의 'app' 객체를 실행
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      # 서비스 이름인 'db'로 접속
+      - DATABASE_URL=postgresql://myuser:mypassword@db/mydatabase
+
+  # --- 프론트엔드 (React) ---
+  frontend:
+    build: ./frontend
+    container_name: my_project_frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+
+  # --- 데이터베이스 (Postgres) ---
+  db:
+    image: postgres:15-alpine
+    container_name: my_project_db
+    ports:
+      - "5432:5432" # 로컬 PC에서 DB 툴로 접속하기 위함
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=mypassword
+      - POSTGRES_DB=mydatabase
+
+volumes:
+  postgres_data:
+    driver: local
