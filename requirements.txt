@@ -1,0 +1,7 @@
+# filename: requirements.txt
+osmnx
+matplotlib
+scikit-learn
+pandas
+networkx
+geopandas
